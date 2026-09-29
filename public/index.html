@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TEAM FORGE-1 | Traffic Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+
+<body>
+  <header class="top-navbar">
+    <div class="brand">
+      <div class="brand-mark">TF1</div>
+      <div><b>TEAM FORGE-1</b><span>Traffic Intelligence</span></div>
+    </div>
+    <nav>
+      <button class="nav active" data-view="overview">◈ <span>Command Center</span></button>
+      <button class="nav" data-view="live">◉ <span>Live Cameras</span></button>
+      <button class="nav" data-view="vehicles">⌕ <span>Vehicle Intelligence</span></button>
+      <button class="nav" data-view="analytics">▥ <span>Traffic Analytics</span></button>
+      <button class="nav" data-view="alerts">⚠ <span>Alerts</span><em id="navAlertCount">3</em></button>
+    </nav>
+    <div class="navbar-right">
+      <div class="system"><span class="dot"></span>
+        <div><b>AI CORE ONLINE</b><small>Healthy</small></div>
+      </div>
+      <div class="profile">
+        <div class="avatar">OP</div>
+        <div><b>Operator</b><small>Control</small></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">BEL</div>
+        <h1 id="pageTitle">Command Center</h1>
+      </div>
+      <div class="top-actions">
+        <div class="live-pill"><span></span> SYSTEM LIVE</div>
+        <button class="icon-btn" id="refreshBtn">↻</button>
+        <button class="icon-btn" onclick="simulateThreat()" style="color:var(--red);border-color:#fecaca;background:#fff5f5;font-weight:bold;padding:9px 15px">🚨 Simulate Threat</button>
+        
+      </div>
+    </header>
+
+    <section id="overview" class="view active-view">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">VEHICLES TODAY</div>
+          <div class="stat-value" id="sVehicles">8,521</div>
+          <div class="stat-trend up">↗ 12.4% <span>vs yesterday</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">ACTIVE CAMERAS</div>
+          <div class="stat-value"><span id="sCameras">4</span><small>/ 5</small></div>
+          <div class="stat-trend neutral">● Network healthy</div>
+        </div>
+        <div class="stat-card alert-stat">
+          <div class="stat-label">ACTIVE ALERTS</div>
+          <div class="stat-value" id="sAlerts">3</div>
+          <div class="stat-trend down">● 1 high priority</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">RECOGNITION ACCURACY</div>
+          <div class="stat-value" id="sAccuracy">92.8%</div>
+          <div class="stat-trend up">↗ 1.8% <span>this week</span></div>
+        </div>
+      </div>
+      <div class="content-grid">
+        <div class="panel map-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Live Vehicle Network</h2>
+              <p>Cross-camera activity & trajectory visualization</p>
+            </div><div style="display:flex; gap:8px;"><button class="ghost" id="heatmapToggle" onclick="toggleHeatmap()" style="border-color:var(--cyan); color:var(--cyan)">🔥 Heatmap</button><button class="ghost" onclick="focusMap()">⌖ Focus</button></div>
+          </div>
+          <div id="map"></div>
+        </div>
+        <div class="overview-side">
+          <div class="panel next-signal-panel">
+            <div class="panel-head">
+              <div>
+                <h2>🚦 Next Signal Traffic Alert</h2>
+                <p>Early intervention prediction</p>
+              </div>
+              <div class="prediction-head-actions"><select id="signalSelector" title="Current signal">
+                  <option value="A">Current: A</option>
+                  <option value="B">Current: B</option>
+                  <option value="C">Current: C</option>
+                  <option value="D">Current: D</option>
+                </select><span id="predictionLive" class="prediction-live">LIVE</span></div>
+            </div>
+            <div id="nextSignalAlert" class="next-signal-body"></div>
+          </div>
+          <div class="panel priority-panel">
+            <div class="panel-head">
+              <div>
+                <h2>Priority Alerts</h2>
+                <p>Requires operator attention</p>
+              </div><button class="text-btn" data-view-target="alerts">View all →</button>
+            </div>
+            <div id="alertList" class="alert-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Traffic Flow</h2>
+              <p>Vehicles detected by time</p>
+            </div><span class="badge">TODAY</span>
+          </div>
+          <div class="chart-wrap"><canvas id="flowChart"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Camera Density</h2>
+              <p>Current traffic load</p>
+            </div>
+          </div>
+          <div id="densityList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="live" class="view">
+      <div class="section-intro">
+        <div>
+          <div class="eyebrow">REAL-TIME FEEDS</div>
+          <h2>Live Camera Network</h2>
+          <p>Monitor vehicle detections and ANPR events across connected cameras.</p>
+        </div>
+        <div class="filter-row"><span class="live-pill"><span></span> LIVE</span><select id="cameraFilter">
+            <option>All cameras</option>
+          </select></div>
+      </div>
+      <div id="cameraGrid" class="camera-grid"></div>
+    </section>
+
+    <section id="vehicles" class="view">
+      <div class="section-intro">
+        <div>
+          <div class="eyebrow">VEHICLE INTELLIGENCE</div>
+          <h2>Search & Trace</h2>
+          <p>Search a plate or global vehicle ID and reconstruct its cross-camera journey.</p>
+        </div>
+      </div>
+      <div class="search-box"><input id="vehicleSearch" placeholder="Search plate e.g. MP20AB1234" /><button
+          id="searchBtn">Search vehicle</button><button class="ghost" id="demoSearch">Try demo</button></div>
+      <div id="vehicleResult" class="vehicle-result empty">Search for a vehicle to view its identity evidence and
+        trajectory.</div>
+    </section>
+
+    <section id="analytics" class="view">
+      <div class="section-intro">
+        <div>
+          <div class="eyebrow">CITY-WIDE INSIGHTS</div>
+          <h2>Traffic Analytics</h2>
+          <p>Aggregated traffic flow, speed and route intelligence.</p>
+        </div>
+      </div>
+      <div class="analytics-grid">
+        <div class="panel wide">
+          <div class="panel-head">
+            <div>
+              <h2>Traffic Volume</h2>
+              <p>Hourly vehicle detections</p>
+            </div>
+          </div>
+          <div class="chart-wrap large"><canvas id="analyticsChart"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Network Health</h2>
+              <p>Camera availability</p>
+            </div>
+          </div>
+          <div class="health-meter">
+            <div class="meter"><span style="width:80%"></span></div><strong>80%</strong><small>4 of 5 cameras
+              online</small>
+          </div>
+          <div class="mini-stat"><span>Average speed</span><b>34.6 km/h</b></div>
+          <div class="mini-stat"><span>Tracked journeys</span><b>3,164</b></div>
+          <div class="mini-stat"><span>Congestion zones</span><b>7</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="alerts" class="view">
+      <div class="section-intro">
+        <div>
+          <div class="eyebrow">SECURITY & OPERATIONS</div>
+          <h2>Alert Center</h2>
+          <p>Watchlist matches, route anomalies and low-confidence detections.</p>
+        </div><button class="danger-btn" id="clearResolved">Resolve all visible</button>
+      </div>
+      <div class="panel">
+        <div id="fullAlerts" class="full-alerts"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+
+</html>

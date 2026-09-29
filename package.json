@@ -1,0 +1,14 @@
+{
+  "name": "SmartTraffic-neural-forge",
+  "version": "1.0.0",
+  "description": "SmartTraffic NETRA - multi-camera ANPR, vehicle re-identification and GIS traffic analytics prototype",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}
